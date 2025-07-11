@@ -86,10 +86,9 @@ export default function NewHabitPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    goalId: goalId || "",
     type: "build",
     frequency: "daily",
-    time: "",
+    times: [] as string[], // multi-select
     cue: "",
     reward: "",
     reminders: true,
@@ -98,21 +97,15 @@ export default function NewHabitPage() {
 
   const [errors, setErrors] = useState({
     name: "",
-    goalId: "",
   })
 
   const validateForm = () => {
     const newErrors = {
       name: "",
-      goalId: "",
     }
 
     if (!formData.name.trim()) {
       newErrors.name = "Habit name is required"
-    }
-
-    if (!formData.goalId) {
-      newErrors.goalId = "Please select a goal"
     }
 
     setErrors(newErrors)
@@ -129,13 +122,14 @@ export default function NewHabitPage() {
     setIsSubmitting(true)
 
     try {
+      if (!goalId) throw new Error("No goal selected.")
       const newHabit = await createHabit(user.id, {
         name: formData.name,
         description: formData.description,
-        goal_id: formData.goalId,
+        goal_id: goalId,
         habit_type: formData.type as "build" | "break",
         frequency: formData.frequency,
-        preferred_time: formData.time || undefined,
+        preferred_time: formData.times.length === 0 ? undefined : formData.times.join(","),
         cue: formData.cue || undefined,
         reward: formData.reward || undefined,
         notes: formData.notes || undefined,
@@ -146,7 +140,7 @@ export default function NewHabitPage() {
       alert("Habit created successfully!")
 
       // Redirect to goal detail page
-      router.push(`/goals/${formData.goalId}`)
+      router.push(`/goals/${goalId}`)
     } catch (error) {
       console.error("Error creating habit:", error)
       alert("Failed to create habit. Please try again.")
@@ -213,31 +207,7 @@ export default function NewHabitPage() {
                     />
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="goal">Goal *</Label>
-                    <Select
-                      value={formData.goalId}
-                      onValueChange={(value) => {
-                        setFormData({ ...formData, goalId: value })
-                        if (errors.goalId) setErrors({ ...errors, goalId: "" })
-                      }}
-                    >
-                      <SelectTrigger className={errors.goalId ? "border-red-500" : ""}>
-                        <SelectValue placeholder="Select a goal" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableGoals.map((goal) => (
-                          <SelectItem key={goal.id} value={goal.id.toString()}>
-                            <div className="flex items-center space-x-2">
-                              <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${goal.color}`} />
-                              <span>{goal.title}</span>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.goalId && <p className="text-sm text-red-500">{errors.goalId}</p>}
-                  </div>
+                  {/* Goal selection removed. Habit will be created under the goal from the URL. */}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -288,22 +258,41 @@ export default function NewHabitPage() {
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="time">Preferred Time</Label>
-                        <Select
-                          value={formData.time}
-                          onValueChange={(value) => setFormData({ ...formData, time: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select time" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {timeSlots.map((time) => (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="times">Preferred Time</Label>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            className={`px-3 py-1 rounded border ${formData.times.includes('Throughout the day') ? 'bg-blue-500 text-white' : 'bg-muted'} transition`}
+                            onClick={() => {
+                              if (formData.times.includes('Throughout the day')) {
+                                setFormData({ ...formData, times: formData.times.filter(t => t !== 'Throughout the day') })
+                              } else {
+                                setFormData({ ...formData, times: ['Throughout the day'] })
+                              }
+                            }}
+                          >
+                            Throughout the day
+                          </button>
+                          {timeSlots.map((time) => (
+                            <button
+                              key={time}
+                              type="button"
+                              className={`px-3 py-1 rounded border ${formData.times.includes(time) ? 'bg-blue-500 text-white' : 'bg-muted'} transition`}
+                              onClick={() => {
+                                if (formData.times.includes('Throughout the day')) return
+                                setFormData({
+                                  ...formData,
+                                  times: formData.times.includes(time)
+                                    ? formData.times.filter(t => t !== time)
+                                    : [...formData.times, time],
+                                })
+                              }}
+                            >
+                              {time}
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-muted-foreground">You can select multiple times or choose 'Throughout the day'.</p>
                       </div>
                     </div>
                   </div>
@@ -390,7 +379,7 @@ export default function NewHabitPage() {
             </Card>
 
             {/* Preview */}
-            {formData.name && formData.goalId && (
+            {formData.name && goalId && (
               <Card className="mt-6">
                 <CardHeader>
                   <CardTitle>Preview</CardTitle>
@@ -409,17 +398,17 @@ export default function NewHabitPage() {
                     )}
                     <div className="flex items-center justify-between text-xs mb-3">
                       <div className="flex items-center space-x-4">
-                        {formData.time && (
+                        {formData.times.length > 0 && (
                           <div className="flex items-center space-x-1">
                             <Clock className="h-3 w-3" />
-                            <span>{formData.time}</span>
+                            <span>{formData.times.join(', ')}</span>
                           </div>
                         )}
                         <span className="px-2 py-1 bg-secondary rounded">{formData.frequency}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Target className="h-3 w-3" />
-                        <span>{availableGoals.find((g) => g.id.toString() === formData.goalId)?.title}</span>
+                        <span>{availableGoals.find((g) => g.id.toString() === goalId)?.title}</span>
                       </div>
                     </div>
                     {(formData.cue || formData.reward) && (

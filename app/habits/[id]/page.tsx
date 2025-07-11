@@ -144,7 +144,7 @@ export default function HabitDetailPage() {
 
         <div className="container mx-auto px-4 py-8">
           {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 gap-y-8 mb-8">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
@@ -194,7 +194,7 @@ export default function HabitDetailPage() {
             </Card>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 gap-y-8">
             {/* Calendar Heatmap */}
             <div className="lg:col-span-2">
               <Card>

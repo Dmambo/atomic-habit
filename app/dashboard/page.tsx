@@ -98,13 +98,13 @@ export default function Dashboard() {
         {/* Header */}
         <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
           <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0">
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-green-500 rounded-lg flex items-center justify-center">
                     <img src="/logo.png" alt="Atomic Habit Logo" className="w-5 h-5" />
                   </div>
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+                  <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
                     Atomic Habit
                   </span>
                 </div>
@@ -164,10 +164,10 @@ export default function Dashboard() {
         <div className="container mx-auto px-4 py-8">
           {/* Welcome Section */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2">
               Good morning, {user?.user_metadata?.full_name?.split(" ")[0] || "there"}! 👋
             </h1>
-            <p className="text-muted-foreground mb-4">Ready to build some great habits today?</p>
+            <p className="text-base sm:text-lg text-muted-foreground mb-4">Ready to build some great habits today?</p>
 
             {/* Motivational Quote */}
             <Card className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/50 dark:to-green-950/50 border-none">
@@ -178,7 +178,7 @@ export default function Dashboard() {
           </div>
 
           {/* Quick Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 gap-y-8 mb-8">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center space-x-2">
@@ -240,7 +240,7 @@ export default function Dashboard() {
           </div>
 
           {dashboardData?.goals && dashboardData.goals.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 gap-y-8 mb-8">
               {dashboardData.goals.map((goal) => (
                 <Card key={goal.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader className="pb-3">
@@ -332,11 +332,11 @@ export default function Dashboard() {
           )}
 
           {/* Today's Habits */}
-          {dashboardData?.habits && dashboardData.habits.length > 0 && (
+          {dashboardData?.habits && dashboardData.habits.length > 0 ? (
             <div className="mb-8">
-              <h2 className="text-2xl font-bold mb-6">Today's Habits</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {dashboardData.habits.slice(0, 6).map((habit) => (
+              <h2 className="text-xl sm:text-2xl font-bold mb-6">Today's Habits</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 gap-y-8">
+                {dashboardData.habits.map((habit) => (
                   <Card
                     key={habit.id}
                     className={`transition-all duration-200 cursor-pointer ${
@@ -344,6 +344,7 @@ export default function Dashboard() {
                         ? "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-800"
                         : ""
                     }`}
+                    // This calls the backend to toggle completion
                     onClick={() => handleToggleHabit(habit.id)}
                   >
                     <CardContent className="p-4">
@@ -392,10 +393,22 @@ export default function Dashboard() {
                 ))}
               </div>
             </div>
+          ) : (
+            <Card className="p-8 text-center mb-8">
+              <Flame className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-2">No habits for today</h3>
+              <p className="text-muted-foreground mb-4">Add a new habit to get started!</p>
+              <Link href="/habits/new">
+                <Button className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Your First Habit
+                </Button>
+              </Link>
+            </Card>
           )}
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 gap-y-8">
             <Link href="/progress">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6 text-center">

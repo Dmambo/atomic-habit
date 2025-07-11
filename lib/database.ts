@@ -178,9 +178,26 @@ export async function getHabits(userId: string, goalId?: string): Promise<HabitW
 
   if (error) throw error
 
+  // Filter for habits due today (simple version: daily or preferred_time matches today)
+  const today = new Date()
+  const todayDay = today.getDay() // 0 (Sun) - 6 (Sat)
+  const todayStr = today.toISOString().split('T')[0]
+
+  const dueToday = data.filter((habit) => {
+    if (habit.frequency === 'daily') return true
+    // Example: if frequency is 'weekly' and preferred_time is a weekday name
+    if (habit.frequency === 'weekly' && habit.preferred_time) {
+      // preferred_time could be 'Monday', 'Tuesday', etc.
+      const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday']
+      return days[todayDay] === habit.preferred_time
+    }
+    // Add more logic for custom frequencies if needed
+    return false
+  })
+
   // Get additional details for each habit
   const habitsWithDetails = await Promise.all(
-    data.map(async (habit) => {
+    dueToday.map(async (habit) => {
       const currentStreak = await calculateHabitStreak(habit.id)
       const completedToday = await isHabitCompletedToday(habit.id)
       const completionRate = await calculateHabitCompletionRate(habit.id)

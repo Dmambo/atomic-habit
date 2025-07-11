@@ -150,7 +150,7 @@ export default function GoalDetailPage() {
 
         <div className="container mx-auto px-4 py-8">
           {/* Goal Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 gap-y-8 mb-8">
             <div className="lg:col-span-2">
               <Card>
                 <CardHeader>
@@ -164,9 +164,9 @@ export default function GoalDetailPage() {
                   <div>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium">Overall Progress</span>
-                      <Badge variant="secondary">{goalData.progress}%</Badge>
+                      <Badge variant="secondary">{goalData.progress_percentage}%</Badge>
                     </div>
-                    <Progress value={goalData.progress} className="h-3" />
+                    <Progress value={goalData.progress_percentage} className="h-3" />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -253,8 +253,8 @@ export default function GoalDetailPage() {
           </div>
 
           {/* Habits Section */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Habits</h2>
+          <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 md:gap-0">
+            <h2 className="text-xl sm:text-2xl font-bold">Habits</h2>
             <Link href={`/habits/new?goalId=${params.id}`}>
               <Button className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600">
                 <Plus className="w-4 h-4 mr-2" />
@@ -263,7 +263,7 @@ export default function GoalDetailPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 gap-y-8">
             {habits.map((habit) => (
               <Card
                 key={habit.id}
