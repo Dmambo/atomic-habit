@@ -5,19 +5,19 @@ export default function PwaNotificationPermission() {
   const [permission, setPermission] = useState<NotificationPermission>(typeof window !== 'undefined' && 'Notification' in window ? Notification.permission as NotificationPermission : 'default')
 
   const requestPermission = async () => {
-    if ('Notification' in window) {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
       const result = await Notification.requestPermission()
       setPermission(result)
     }
   }
 
   useEffect(() => {
-    if ('Notification' in window) {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
       setPermission(Notification.permission)
     }
   }, [])
 
-  if (!('Notification' in window) || permission === 'granted') return null
+  if (typeof window === 'undefined' || !('Notification' in window) || permission === 'granted') return null
 
   return (
     permission !== 'default' && permission !== 'denied' ? null : (
