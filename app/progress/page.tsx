@@ -1,6 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useAuth } from "@/hooks/use-auth"
+import { useEffect, useState } from "react"
+import { getDashboardStats } from "@/lib/database"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -10,8 +12,44 @@ import Link from "next/link"
 import { AuthGuard } from "@/components/auth-guard"
 
 export default function ProgressPage() {
-  const [timeRange, setTimeRange] = useState("30d")
-  const [selectedMetric, setSelectedMetric] = useState("completion")
+  const { user } = useAuth()
+  const [stats, setStats] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (user) {
+      getDashboardStats(user.id)
+        .then(setStats)
+        .catch(() => setStats(null))
+        .finally(() => setIsLoading(false))
+    } else {
+      setIsLoading(false)
+    }
+  }, [user])
+
+  if (isLoading) {
+    return (
+      <AuthGuard>
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+        </div>
+      </AuthGuard>
+    )
+  }
+
+  if (!user) {
+    return (
+      <AuthGuard>
+        <></>
+      </AuthGuard>
+    )
+  }
+
+  // Fallbacks if stats are not loaded
+  const totalGoals = stats?.totalGoals ?? 0
+  const completedToday = stats?.completedToday ?? 0
+  const longestStreak = stats?.longestStreak ?? 0
+  const overallProgress = stats?.overallProgress ?? 0
 
   return (
     <AuthGuard>
@@ -33,7 +71,7 @@ export default function ProgressPage() {
               </div>
 
               <div className="flex items-center space-x-2">
-                <Select value={timeRange} onValueChange={setTimeRange}>
+                {/* <Select value="30d" onValueChange={() => {}}>
                   <SelectTrigger className="w-32">
                     <SelectValue />
                   </SelectTrigger>
@@ -43,7 +81,7 @@ export default function ProgressPage() {
                     <SelectItem value="90d">Last 90 days</SelectItem>
                     <SelectItem value="1y">Last year</SelectItem>
                   </SelectContent>
-                </Select>
+                </Select> */}
                 <Button variant="outline" size="sm">
                   <Download className="h-4 w-4 mr-2" />
                   Export
@@ -61,7 +99,7 @@ export default function ProgressPage() {
                 <div className="flex items-center space-x-2">
                   <Target className="h-5 w-5 text-blue-500" />
                   <div>
-                    <p className="text-2xl font-bold">0</p>
+                    <p className="text-2xl font-bold">{totalGoals}</p>
                     <p className="text-xs text-muted-foreground">Active Goals</p>
                   </div>
                 </div>
@@ -73,7 +111,7 @@ export default function ProgressPage() {
                 <div className="flex items-center space-x-2">
                   <BarChart3 className="h-5 w-5 text-green-500" />
                   <div>
-                    <p className="text-2xl font-bold">0</p>
+                    <p className="text-2xl font-bold">{completedToday}</p>
                     <p className="text-xs text-muted-foreground">Habits Completed</p>
                   </div>
                 </div>
@@ -85,7 +123,7 @@ export default function ProgressPage() {
                 <div className="flex items-center space-x-2">
                   <Flame className="h-5 w-5 text-orange-500" />
                   <div>
-                    <p className="text-2xl font-bold">0</p>
+                    <p className="text-2xl font-bold">{stats?.habits?.[0]?.current_streak ?? 0}</p>
                     <p className="text-xs text-muted-foreground">Current Streak</p>
                   </div>
                 </div>
@@ -97,7 +135,7 @@ export default function ProgressPage() {
                 <div className="flex items-center space-x-2">
                   <TrendingUp className="h-5 w-5 text-purple-500" />
                   <div>
-                    <p className="text-2xl font-bold">0</p>
+                    <p className="text-2xl font-bold">{longestStreak}</p>
                     <p className="text-xs text-muted-foreground">Longest Streak</p>
                   </div>
                 </div>
@@ -109,7 +147,7 @@ export default function ProgressPage() {
                 <div className="flex items-center space-x-2">
                   <div className="w-5 h-5 bg-gradient-to-r from-blue-500 to-green-500 rounded-full" />
                   <div>
-                    <p className="text-2xl font-bold">0%</p>
+                    <p className="text-2xl font-bold">{overallProgress}%</p>
                     <p className="text-xs text-muted-foreground">Completion Rate</p>
                   </div>
                 </div>
